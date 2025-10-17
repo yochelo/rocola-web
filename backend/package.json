@@ -1,6 +1,7 @@
 {
   "name": "rocola-web",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "Rocola Web (frontend + backend)",
   "main": "server2.js",
   "scripts": {
