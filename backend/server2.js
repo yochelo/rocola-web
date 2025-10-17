@@ -70,10 +70,8 @@ io.on("connection", socket => {
 
 
 // === Servir el frontend ===
-import path from "path";
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const path = require("path");
+const express = require("express");
 
 const FRONTEND_PATH = path.join(__dirname, "../frontend");
 app.use(express.static(FRONTEND_PATH));
@@ -81,6 +79,7 @@ app.use(express.static(FRONTEND_PATH));
 app.get("/", (req, res) => {
   res.sendFile(path.join(FRONTEND_PATH, "index.html"));
 });
+
 
 // ... tus rutas /playlist GET, POST, DELETE, etc.
 
