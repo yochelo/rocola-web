@@ -89,10 +89,14 @@ app.get("/search", async (req, res) => {
 
   // Mirrors públicos (orden de prioridad)
   const mirrors = [
-    `https://yt.artemislena.eu/api/v1/search?q=${encodeURIComponent(query)}`,
-    `https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query)}`,
-    `https://pipedapi.syncpundit.com/search?q=${encodeURIComponent(query)}`
+  "https://yt.artemislena.eu/api/v1/search?q=",
+  "https://pipedapi.kavin.rocks/search?q=",
+  "https://pipedapi.mha.fi/search?q=",
+  "https://pipedapi.adminforge.de/search?q=",
+  "https://yewtu.be/api/v1/search?q=",
+  "https://invidious.privacydev.net/api/v1/search?q="
   ];
+
 
   for (const url of mirrors) {
     try {
