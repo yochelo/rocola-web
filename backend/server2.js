@@ -69,15 +69,17 @@ io.on("connection", socket => {
 });
 
 
+// === Servir el frontend ===
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+const FRONTEND_PATH = path.join(__dirname, "../frontend");
+app.use(express.static(FRONTEND_PATH));
 
-
-// 🔹 Servir archivos estáticos (front)
-app.use(express.static(__dirname));
-
-// 🔹 Ruta raíz (si alguien entra a / o /index.html)
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+  res.sendFile(path.join(FRONTEND_PATH, "index.html"));
 });
 
 // ... tus rutas /playlist GET, POST, DELETE, etc.
