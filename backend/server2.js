@@ -1,3 +1,7 @@
+
+import fetch from "node-fetch";
+
+
 const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
@@ -119,6 +123,8 @@ app.get("/search", async (req, res) => {
 
       if (videos.length > 0) {
         console.log(`✅ Resultados obtenidos de: ${url}`);
+        console.log("✅ Mirror que respondió:", url);
+
         return res.json(videos);
       }
 
