@@ -71,7 +71,6 @@ io.on("connection", socket => {
 
 // === Servir el frontend ===
 const path = require("path");
-const express = require("express");
 
 const FRONTEND_PATH = path.join(__dirname, "../frontend");
 app.use(express.static(FRONTEND_PATH));
