@@ -1,0 +1,1191 @@
+/* =========================================================
+   🌙 ESTILOS BASE Y RESET
+   ========================================================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #353535;
+  color: #efefef;
+  margin: 0;
+}
+
+/* =========================================================
+   🧭 LAYOUT GENERAL
+   ========================================================= */
+/* --- Banner principal --- */
+/* --- Banner con reflejo --- */
+header.banner-rocola {
+  position: relative;
+  background-image: url("banner-rocola.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #000;
+  height: 160px;
+  border-bottom: 2px solid #222;
+  overflow: hidden;
+}
+
+/* ✨ Capa animada de luz */
+header.banner-rocola::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 80%;
+  height: 100%;
+  background: radial-gradient(
+    circle at center,
+    rgb(180, 200, 255) 0%,
+    rgba(130, 255, 238, 0.9) 25%,
+    rgba(80, 100, 180, 0.05) 60%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  filter: blur(40px);
+  animation: reflejoPulso 4.5s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+@keyframes reflejoPulso {
+  0% {
+    left: -120%;
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    left: 120%;
+    opacity: 0.6;
+    transform: scale(1);
+  }
+}
+
+
+@keyframes reflejoSuave {
+  0% {
+    left: -120%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+
+/* 🔁 Animación del reflejo */
+@keyframes reflejo {
+  0% {
+    left: -150%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+/* Versión móvil */
+@media (max-width: 600px) {
+  header.banner-rocola {
+    height: 120px;
+  }
+}
+
+
+
+.footer {
+  text-align: center;
+  color: #888;
+  font-size: 0.8em;
+  padding: 10px;
+}
+
+/* Módulos */
+.mod {
+  display: none;
+  padding: 10px;
+}
+.mod.active {
+  display: block;
+}
+
+/* Contenedor de pestañas */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  background: linear-gradient(180deg, #222 0%, #2b2b2b 100%);
+  padding: 10px;
+  border-bottom: 1px solid #333;
+  box-shadow: inset 0 -1px 4px rgba(0, 255, 200, 0.15);
+}
+
+/* Botones de pestañas */
+.tab {
+  background: rgba(25, 25, 30, 0.8);
+  color: #b8fdf8;
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 6px rgba(0, 255, 200, 0.15);
+  backdrop-filter: blur(2px);
+}
+
+/* Al pasar el mouse */
+.tab:hover {
+  background: rgba(0, 255, 200, 0.12);
+  box-shadow: 0 0 10px rgba(0, 255, 200, 0.611);
+  color: #fff;
+}
+
+/* Pestaña activa */
+.tab.active {
+  font-weight: 600;
+  background: rgba(0, 255, 200, 0.15);
+  border-color: rgb(0, 255, 200);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(0, 234, 255, 0.532);
+}
+
+/* Paneles de contenido */
+.tabpane {
+  display: none;
+  padding: 12px;
+}
+
+.tabpane.active {
+  display: block;
+}
+
+/* --- Glow animado en pestaña activa --- */
+.tab.active {
+  position: relative;
+  overflow: hidden;
+}
+
+.tab.active::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  border-radius: 6px;
+  background: linear-gradient(
+    120deg,
+    rgba(0, 255, 200, 0.042),
+    rgba(0, 170, 255, 0.367),
+    rgba(0, 255, 200, 0.045)
+  );
+  background-size: 200% 200%;
+  animation: bordeLuz 2s linear infinite;
+  z-index: 0;
+  filter: blur(3px);
+}
+
+.tab.active span,
+.tab.active i {
+  position: relative;
+  z-index: 1;
+}
+
+/* 🔁 Animación del reflejo */
+@keyframes bordeLuz {
+  0% {
+    background-position: 200% 0%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+
+/* =========================================================
+   🔘 COMPONENTES GENERALES
+   ========================================================= */
+.btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #eee;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn.primary {
+  background: #1d60a7;
+  color: #fff;
+  border: none;
+}
+
+.btn.danger {
+  background: #e24a4a;
+  color: #fff;
+  border: none;
+}
+
+.btn.ghost {
+  background: none;
+  color: #555;
+}
+
+.input {
+  width: 100%;
+  max-width: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  outline: none;
+  font-size: 1.1rem;
+  background: #131313;
+  color: #f1f1f1;
+  box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.input:focus {
+  box-shadow: 0 0 10px rgba(0, 247, 255, 0.727);
+}
+
+.roles {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px;
+}
+
+.lista {
+  list-style: none;
+  padding: 0;
+}
+
+/* =========================================================
+   🎬 PLAYER Y BUSCADOR DE VIDEOS
+   ========================================================= */
+.player-controls {
+  display: grid;
+  gap: 8px;
+}
+@media (min-width: 700px) {
+  .player-controls {
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+  }
+}
+
+/* Layout del player (2 columnas) */
+/* --- Layout general (versión base de escritorio) --- */
+.layout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  height: 100%;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+
+.col.izquierda {
+  width: 50%;
+  overflow-y: auto;
+  background: #2c2c2c;
+  padding: 10px;
+}
+
+.col.derecha {
+  width: 50%;
+  background: #111;
+  position: sticky;
+  top: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 15px;
+  border-radius: 8px;
+  min-height: 250px;  /* 👈 garantiza espacio pero sin desbordar */
+}
+
+
+#previewPlayer,
+#previewPlayerInvitado {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  aspect-ratio: 16 / 9;        /* proporción estándar */
+  border-radius: 10px;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+
+/* 🧩 Fix adicional para navegadores que ignoran aspect-ratio */
+#mod-invitado .col.derecha iframe {
+  height: 270px;               /* altura fija en caso de fallo */
+}
+
+
+
+/* =========================================================
+   🎧 RESULTADOS Y MINIATURAS
+   ========================================================= */
+#resultados {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+}
+
+#resultados .item div {
+  background: rgba(0, 0, 0, 0.6);
+  width: 100%;
+  text-align: center;
+  color: #eee;
+  font-size: 0.9rem;
+  padding: 4px 6px;
+  border-radius: 0 0 8px 8px;
+  text-shadow: 0 0 3px #000;
+  min-height: 38px;
+  box-sizing: border-box;
+}
+
+#resultados img {
+  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+#resultados img:hover {
+  transform: scale(1.05);
+}
+
+/* =========================================================
+   🪄 RESULTADO INDIVIDUAL CON OVERLAY
+   ========================================================= */
+.resultado {
+  position: relative;
+  background: #1a1a1a;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.resultado img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: transform 0.3s;
+}
+.resultado p {
+  margin: 0;
+  padding: 6px;
+  color: #ddd;
+  font-size: 0.9rem;
+}
+
+/* Overlay con botones */
+.opciones {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.65);
+  opacity: 0;
+  transition: 0.3s;
+}
+.resultado.activo .opciones {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* =========================================================
+   ⚡ BOTONES DE OVERLAY
+   ========================================================= */
+.btn.agregar {
+  flex: 1;
+  height: 60%;
+  margin: 0 6px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  background: #28a745;
+}
+
+.btn.preview {
+  flex: 1;
+  height: 60%;
+  margin: 0 6px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  background: #ffb400;
+}
+
+.btn.agregar.tocado {
+  background: #3fd468;
+}
+.btn.preview.tocado {
+  background: #555;
+}
+
+/* =========================================================
+   ✅ EFECTO DE CONFIRMACIÓN (TILDE)
+   ========================================================= */
+.tilde {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 3rem;
+  color: #3fd468;
+  background: rgba(0, 128, 0, 0.3);
+  animation: fadeOut 1s ease forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+}
+/* =========================================================
+   📱 VISTA CELULAR — ROCOLA WEB LIMPIA
+   ========================================================= */
+@media (max-width: 768px) {
+
+  /* --- Layout general --- */
+  .layout {
+    display: flex;
+    flex-direction: row;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+    gap: 10px;
+    padding: 0 8px;
+    background: #2b2b2b;
+  }
+
+  /* --- Columna izquierda (resultados) --- */
+  .col.izquierda {
+    width: 50%;
+    overflow-y: auto;
+    padding: 8px;
+    background: #2c2c2c;
+    border-radius: 8px;
+  }
+
+  /* --- Columna derecha (preview fijo) --- */
+
+  .col.derecha {
+    width: 50%;
+    position: sticky;
+    top: 15px;                 /* 👈 esto la baja */
+    margin-top: 20px;
+    align-self: flex-start;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background: #070707;
+    border-radius: 8px;
+    padding: 15px 6px 6px 6px; /* 👈 padding superior real */
+  }
+
+
+  #previewPlayer {
+    width: 100%;
+    height: 300px;               /* ajustá según prefieras */
+    border-radius: 10px;
+    position: sticky;
+    top: 10px;                   /* 👈 se fija dentro del contenedor */
+  }
+
+
+  /* --- Resultados --- */
+  #resultados {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .resultado {
+    position: relative;
+    background: #1a1a1a;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 4px rgba(0,0,0,0.4);
+  }
+
+  .resultado img {
+    width: 100%;
+    aspect-ratio: 16 / 9; /* 👈 formato horizontal real */
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+  }
+
+  .resultado p {
+    font-size: 0.9rem;
+    padding: 6px;
+    color: #ddd;
+  }
+
+  /* --- Overlay botones --- */
+  .opciones {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.65);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .resultado.activo .opciones {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .opciones .btn {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: clamp(0.8rem, 2vw, 1rem);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .opciones .btn.agregar { background: #28a745; }
+  .opciones .btn.preview { background: #ffb400; }
+  .opciones .btn:hover   { transform: scale(1.05); }
+}
+
+/* =========================================================
+   🎧 ESTILOS MODO INVITADO
+   ========================================================= */
+#mod-invitado {
+  background: #353535;   /* mismo fondo oscuro */
+  color: #efefef;        /* texto claro */
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  padding: 15px 15px 40px 15px;
+}
+
+
+
+/* =========================================================
+   🎧 Ajuste del preview — MODO INVITADO
+   ========================================================= */
+#mod-invitado .col.derecha {
+  top: 70px;               /* 👈 baja solo el preview del invitado */
+  padding-top: 20px;
+}
+
+/* =========================================================
+   🕹️ PANTALLA DE INICIO — FONDO ELEGÍ TU ROL
+   ========================================================= */
+#mod-inicio {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  background: none;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#mod-inicio .hero {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#mod-inicio .fondo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+#mod-inicio .botones {
+  position: absolute;
+  bottom: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex !important;          /* fuerza el modo fila */
+  flex-direction: row !important;
+  justify-content: space-between;    /* los separa a los lados */
+  align-items: center;
+  width: 65vw;                       /* ancho relativo al viewport */
+  max-width: 700px;                  /* no se pasa en pantallas grandes */
+  z-index: 10;
+  margin: 0 auto;
+}
+
+
+#mod-inicio .botones .btn {
+  padding: 12px 5px;
+  border: none;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+  transition: transform 0.2s ease, background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;                       /* separa emoji y texto */
+  line-height: 1.0;
+  height: 72px;
+  text-align: center;
+}
+
+#mod-inicio .botones .btn.primary {
+  background: #f0f0f0;
+  color: #222;
+}
+#mod-inicio .botones .btn:not(.primary) {
+  background: #00ffdd;
+  color: #222;
+}
+
+#mod-inicio .botones .btn:hover {
+  transform: scale(1.08);
+}
+
+#mod-inicio .botones .btn::before {
+  content: attr(data-icon);
+  
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+/* 📱 Responsive */
+@media (max-width: 600px) {
+  #mod-inicio .botones {
+    flex-direction: column;
+    justify-content: center;
+    width: 95%;
+    padding: 40px 5px;
+    gap: 230px;
+    bottom: 1.2%;
+  }
+}
+
+.mensajes-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#lista-mensajes {
+  width: 90%;
+  max-width: 500px;
+  background: rgba(30, 30, 30, 0.205);
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+  color: #eee;
+  list-style: none;
+  max-height: 250px;
+  overflow-y: auto;
+  box-shadow: inset 0 0 6px rgba(0, 255, 200, 0.15);
+}
+
+#lista-mensajes li {
+  margin-bottom: 6px;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.mensajes-input {
+  display: flex;
+  gap: 8px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.mensajes-input input {
+  flex: 1;
+  background: #22222227;
+  color: #b8fdf8;
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.mensajes-input button {
+  background: linear-gradient(145deg, #00ffe6, #00bfa6);
+  border: none;
+  color: #fffefe;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0, 255, 94, 0.736);
+  transition: all 0.2s ease;
+}
+
+.mensajes-input button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(0, 255, 200, 0.6);
+  background: linear-gradient(145deg, #00ffea, #00d6b4);
+}
+
+.mensajes-input button:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 5px rgba(0, 255, 200, 0.4);
+}
+
+
+/* =========================================================
+   💬 MURO DE MENSAJES — Tarjetas individuales
+   ========================================================= */
+.mensajes-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  width: 90%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;         /* 👈 evita barras laterales */
+}
+
+
+@keyframes aparecerMensaje {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mensaje-card {
+  background: rgba(30, 30, 30, 0.434);
+  border: 1px solid rgba(0, 255, 200, 0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #d8fff9;
+  font-size: 0.95rem;
+  box-shadow: 0 0 6px rgba(0, 255, 200, 0.15);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+  
+  /* ✨ animación nueva */
+  animation: aparecerMensaje 0.6s ease-out forwards;
+}
+
+/* =========================================================
+   🧍 NOMBRE DEL USUARIO EN MENSAJE
+   ========================================================= */
+/* 🧍 Centrado y espaciado del input de nombre */
+#nombre-usuario {
+  display: block;
+  margin: 0 auto 12px auto;   /* centrado y separación abajo */
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  background: #22222278;
+  color: #b8fdf8;
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 1rem;
+  box-shadow: inset 0 0 4px rgba(0, 255, 200, 0.1);
+}
+
+#nuevo-mensaje {
+  flex: 1;
+}
+
+.mensaje-card strong {
+  display: block;
+  color: #00ff44;
+  margin-bottom: 1px;
+  font-size: 0.9rem;
+}
+
+.nombre-wrapper {
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  margin: 0 auto 12px auto;
+}
+
+.nombre-box {
+  display: flex;
+  align-items: flex-start;   /* 👈 sube los elementos */
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 12px auto;
+}
+
+#nombre-usuario {
+  flex: 1;
+  text-align: center;
+  background: #22222262;
+  color: #b8fdf8;
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 1rem;
+  box-shadow: inset 0 0 4px rgba(0, 255, 200, 0.1);
+}
+
+.color-label {
+  font-size: 0.9rem;
+  color: #00ff5e;
+  text-shadow: 0 0 6px rgb(255, 255, 255);
+}
+
+#color-usuario {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+  box-shadow: 0 0 6px rgba(0, 255, 200, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 4px;            /* 👈 ajuste fino de altura */
+}
+
+/* === MODAL DE CONFIRMACIÓN === */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: #111;
+  color: #fff;
+  padding: 25px 30px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  font-size: 1.1rem;
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+.botones-modal {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.botones-modal button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+#confirmYes {
+  background: #d32f2f;
+  color: white;
+}
+
+#confirmNo {
+  background: #333;
+  color: #fff;
+}
+
+.botones-modal button:hover {
+  transform: scale(1.05);
+}
+
+
+/* =========================================================
+   💬 ESTILOS DE MURO UNIFICADOS — MAESTRO / INVITADO
+   ========================================================= */
+
+/* === NOMBRE === */
+#nombre-usuario-invitado {
+  display: block;
+  margin: 0 auto 12px auto;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  background: #22222257;
+  color: #b8fdf8;
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 1rem;
+  box-shadow: inset 0 0 4px rgba(0, 255, 200, 0.1);
+}
+
+/* === COLOR === */
+#color-usuario-maestro,
+#color-usuario-invitado {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+  box-shadow: 0 0 6px rgba(0, 255, 200, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 4px;
+}
+
+/* === INPUT DE MENSAJE === */
+#nuevo-mensaje-maestro,
+#nuevo-mensaje-invitado {
+  flex: 1;
+  background: #22222238;
+  color: #b8fdf8;
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+/* === LISTA DE MENSAJES === */
+#lista-mensajes-maestro,
+#lista-mensajes-invitado {
+  width: 90%;
+  max-width: 500px;
+  background: rgba(30, 30, 30, 0.186);
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+  color: #eee;
+  list-style: none;
+  max-height: 250px;
+  overflow-y: auto;
+  box-shadow: inset 0 0 6px rgba(0, 255, 200, 0.15);
+}
+
+/* 🎸 Fondo del Muro estilo Beggars Banquet */
+#tab-maestro-mensajes,
+#tab-invitado-mensajes {
+  background-image: url("rolling.jpg"); /* 👈 tu archivo real */
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 🔹 Overlay oscuro para legibilidad */
+#tab-maestro-mensajes::before,
+#tab-invitado-mensajes::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.067); /* oscurece */
+  backdrop-filter: blur(0px);
+  z-index: 0;
+}
+
+/* 🔹 Contenido del muro por encima del overlay */
+#tab-maestro-mensajes > *,
+#tab-invitado-mensajes > * {
+  position: relative;
+  z-index: 1;
+}
+
+#nombre-usuario-maestro {
+  display: block;
+  margin: 0 auto 12px auto;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  background: #22222257;
+  color: #b8fdf8;
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 1rem;
+  box-shadow: inset 0 0 4px rgba(0, 255, 200, 0.1);
+}
+
+/* =========================================================
+   📷 QR CODE
+   ========================================================= */
+.qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 30px;
+  text-align: center;
+  background: rgba(20, 20, 20, 0.4);
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 0 12px rgba(0, 255, 200, 0.15);
+  backdrop-filter: blur(2px);
+}
+
+.qr-container h3 {
+  color: #b8fdf8;
+  text-shadow: 0 0 6px rgba(0, 255, 200, 0.6);
+}
+
+.qr-container img {
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 255, 200, 0.4);
+  background: #fff;
+}
+
+.qr-link {
+  color: #00ffea;
+  font-size: 0.9rem;
+  word-break: break-all;
+  opacity: 0.8;
+}
+
+/* =========================================================
+   🌟 EFECTO NEÓN PULSANTE EN QR
+   ========================================================= */
+.qr-container img {
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 255, 200, 0.6),
+              0 0 30px rgba(0, 255, 200, 0.2);
+  background: #fff;
+  animation: glowQR 2.8s ease-in-out infinite;
+}
+
+@keyframes glowQR {
+  0% {
+    box-shadow: 0 0 10px rgba(0, 255, 200, 0.3),
+                0 0 25px rgba(0, 255, 200, 0.15);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 255, 200, 0.7),
+                0 0 40px rgba(0, 255, 200, 0.3);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(0, 255, 200, 0.3),
+                0 0 25px rgba(0, 255, 200, 0.15);
+    transform: scale(1);
+  }
+}
+
+/* ✨ Brillo suave en el texto debajo del QR */
+.qr-link {
+  color: #00fff2;
+  font-size: 0.95rem;
+  text-shadow: 0 0 6px rgba(0, 255, 200, 0.4);
+  opacity: 0.9;
+}
+
+/* =========================================================
+   ⚡ HALO ENERGÉTICO ANIMADO ALREDEDOR DEL QR
+   ========================================================= */
+.qr-container {
+  position: relative;
+  isolation: isolate; /* 👈 asegura que el halo no se mezcle con otros efectos */
+}
+
+.qr-container::after {
+  content: "";
+  position: absolute;
+  inset: -25px; /* 👈 tamaño del halo */
+  border-radius: 20px;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 255, 200, 0.25) 0%,
+    rgba(0, 255, 200, 0.08) 40%,
+    transparent 70%
+  );
+  filter: blur(40px);
+  opacity: 0.6;
+  animation: pulsoHalo 5s ease-in-out infinite;
+  z-index: -1; /* 👈 se queda detrás del contenido */
+}
+
+@keyframes pulsoHalo {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.5;
+  }
+}
+
+  /* =========================================================
+   🚀 BOTÓN “ABRIR ROCOLA” DEBAJO DEL QR
+   ========================================================= */
+.btn-open-link {
+  margin-top: 4px;
+  background: linear-gradient(145deg, #00ffe6, #00bfa6);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(0, 255, 200, 0.5);
+  transition: all 0.25s ease-in-out;
+}
+
+.btn-open-link:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 6px rgba(0, 255, 200, 0.35);
+}
+
+@media (hover: hover) {
+  .btn-open-link:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 18px rgba(0, 255, 200, 0.8);
+  }
+}

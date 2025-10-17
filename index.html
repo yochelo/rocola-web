@@ -1,0 +1,192 @@
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🎶 Rocola Web (Local)</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="main.js"></script>
+</head>
+
+<body>
+
+  <!-- Módulo Inicio -->
+  <main id="mod-inicio" class="mod active inicio">
+    <div class="hero">
+      <img src="rocola-bg.png" alt="Rocola Online" class="fondo" />
+      <div class="botones">
+        <button class="btn primary" data-icon="🎤" onclick="mostrarModulo('maestro')">
+          Soy Deejay
+        </button>
+        <button class="btn" data-icon="😎" onclick="mostrarModulo('invitado')">
+          Público VIP
+        </button>
+      </div>
+    </div>
+  </main>
+
+
+  <!-- Módulo Maestro -->
+  <main id="mod-maestro" class="mod">
+    <header class="banner-rocola"></header>
+    <nav class="tabs">
+      <button class="tab" onclick="mostrarConfirmacion()">🧹 Limpiar</button>
+      <button class="tab active" onclick="cambiarPestaña('maestro','lista', this)">🎵 Lista</button>
+      <button class="tab" onclick="cambiarPestaña('maestro','player', this)">➕ Agregar</button>
+      <button class="tab" onclick="cambiarPestaña('maestro','qr', this)">📷 QR</button>
+      <button class="tab" onclick="cambiarPestaña('maestro','mensajes', this)">💬 Muro</button>
+    </nav>
+
+<section id="tab-maestro-lista" class="tabpane active">
+  <ul id="lista-maestro" class="lista"></ul>
+</section>
+
+<!-- 🎧 Pestaña: Player -->
+<section id="tab-maestro-player" class="tabpane">
+  <div class="player-controls">
+    <input id="yt-busqueda" class="input" placeholder="Buscar en YouTube (ej: beatles rain)" />
+    <button class="btn primary" onclick="buscarVideosLocal()">Buscar</button>
+  </div>
+
+  <!-- Mensaje dinámico del buscador -->
+  <p class="hint" id="yt-info"></p>
+
+  <div class="layout">
+    <div class="col izquierda" id="resultados"></div>
+    <div class="col derecha">
+      <iframe id="previewPlayer" src="" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </div>
+</section>
+<section id="tab-maestro-mensajes" class="tabpane">
+  <div class="mensajes-box">
+    <div class="nombre-wrapper">
+      <div class="nombre-box">
+        <input id="nombre-usuario-maestro" type="text" placeholder="Tu nombre o emoji 😎" maxlength="30">
+        <input id="color-usuario-maestro" type="color" value="#01FE59" title="Elegí tu color">
+        <label for="color-usuario-maestro" class="color-label">Color</label>        
+      </div>
+    </div>
+
+    <div class="mensajes-input">
+      <input id="nuevo-mensaje-maestro" type="text" placeholder="Escribí tu mensaje..." maxlength="120">
+      <button onclick="enviarMensaje('maestro')">Enviar</button>
+    </div>
+
+    <ul id="lista-mensajes-maestro" class="mensajes-lista"></ul>
+  </div>
+</section>
+<!-- 📷 Pestaña QR (Maestro) -->
+<section id="tab-maestro-qr" class="tabpane">
+  <div class="qr-container">
+    <h3>📱 Escaneá para unirte a la Rocola</h3>
+    <div id="qr-maestro"></div>
+    <p class="qr-link">https://rocolaweb.web.app</p>
+    <button class="btn-open-link" onclick="copiarLinkQR(window.location.origin)">
+      Copiar link
+    </button>
+  </div>
+</section>
+
+
+
+
+
+
+</main> 
+  <!-- Módulo Invitado -->
+  <main id="mod-invitado" class="mod">
+    <header class="banner-rocola"></header>
+    <nav class="tabs">
+<button class="tab active" onclick="cambiarPestaña('invitado','lista', this)">🎵 Lista</button>
+<button class="tab" onclick="cambiarPestaña('invitado','player', this)">➕ Agregar</button>
+<button class="tab" onclick="cambiarPestaña('invitado','qr', this)">📷 QR</button>
+<button class="tab" onclick="cambiarPestaña('invitado','mensajes', this)">💬 Muro</button>
+
+    </nav>
+
+    <section id="tab-invitado-lista" class="tabpane active">
+      <ul id="lista-invitado" class="lista"></ul>
+    </section>
+
+    <!-- 🎧 Pestaña: Player (versión Invitado) -->
+    <section id="tab-invitado-player" class="tabpane">
+      <div class="player-controls">
+        <input id="yt-busqueda-invitado" class="input" placeholder="Buscar en YouTube (ej: beatles rain)" />
+        <button class="btn primary" onclick="buscarVideosLocalInvitado()">Buscar</button>
+      </div>
+
+      <!-- Mensaje dinámico del buscador -->
+      <p class="hint" id="yt-info-invitado"></p>
+
+      <div class="layout">
+        <div class="col izquierda" id="resultados-invitado"></div>
+
+        <div class="col derecha">
+          <iframe id="previewPlayerInvitado" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+    </section>
+    
+<section id="tab-invitado-mensajes" class="tabpane">
+  <div class="mensajes-box">
+    <!-- 🧍 Contenedor del nombre -->
+    <div class="nombre-wrapper">
+      <div class="nombre-box">
+        <input id="nombre-usuario-invitado" type="text" placeholder="Tu nombre o emoji 😎" maxlength="30">
+        <input id="color-usuario-invitado" type="color" value="#01FE59" title="Elegí tu color">
+        <label for="color-usuario-invitado" class="color-label">Color</label>   
+      </div>
+    </div>
+
+    <!-- 💬 Input para mensaje -->
+    <div class="mensajes-input">
+      <input id="nuevo-mensaje-invitado" type="text" placeholder="Escribí tu mensaje..." maxlength="120">
+      <button onclick="enviarMensaje('invitado')">Enviar</button>
+    </div>
+
+    <!-- 📜 Lista de mensajes -->
+    <ul id="lista-mensajes-invitado" class="mensajes-lista"></ul>
+  </div>
+</section>
+<!-- 📷 Pestaña QR (Invitado) -->
+<section id="tab-invitado-qr" class="tabpane">
+  <div class="qr-container">
+    <h3>📱 Escaneá para unirte a la Rocola</h3>
+    <div id="qr-invitado"></div>
+    <p class="qr-link">https://rocolaweb.web.app</p>
+    <button class="btn-open-link" onclick="copiarLinkQR(window.location.origin)">
+      Copiar link
+    </button>
+  </div>
+</section>
+
+</main>
+
+
+  <footer class="footer">
+    <small>- Final - </small>
+  </footer>
+  <script>
+window.addEventListener("load", () => {
+  document.querySelector("header.banner-rocola").classList.add("loaded");
+});
+</script>
+
+<!-- 🧹 Modal de confirmación -->
+<div id="confirmModal" class="modal">
+  <div class="modal-content">
+    <p>⚠️ ¿Estás seguro de borrar <strong>todas las canciones</strong> de la lista?</p>
+    <div class="botones-modal">
+      <button id="confirmYes">Sí, borrar</button>
+      <button id="confirmNo">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
+</body>
+</html>

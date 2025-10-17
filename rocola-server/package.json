@@ -1,0 +1,14 @@
+{
+  "name": "rocola-server",
+  "version": "1.0.0",
+  "description": "Servidor Rocola Web (playlist + chat)",
+  "main": "server2.js",
+  "scripts": {
+    "start": "node server2.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "cors": "^2.8.5"
+  }
+}
