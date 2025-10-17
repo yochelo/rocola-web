@@ -6,9 +6,9 @@
 // Estado inicial local
 
 // === SOCKET.IO ===
-// const socket = io("http://localhost:5055");
+// const socket = io("https://rocola-server.onrender.com");
 // 🔇 Hosting Firebase: no hay backend local, se desactiva temporalmente el chat
-const socket = { emit: () => {}, on: () => {} };
+const socket = io("https://rocola-server.onrender.com");
 
 
 // 🔔 Cuando el backend emite "playlist_actualizada"
@@ -168,8 +168,9 @@ function forzarRefresh() {
     document.getElementById("yt-info").textContent = "Buscando...";
 
     try {
-      const res = await fetch(`http://localhost:5056/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`https://rocola-server.onrender.com/search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
+
 
       if (!data.length) {
         document.getElementById("yt-info").textContent = "No se encontraron resultados.";
@@ -313,7 +314,7 @@ async function agregarDesdeResultados(event, btn) {
 
   try {
     // 💾 Enviamos la canción al backend local (mock Firebase)
-    await fetch("http://localhost:5055/playlist", {
+    await fetch("https://rocola-server.onrender.com/playlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nueva)
@@ -357,8 +358,9 @@ async function buscarVideosLocalInvitado() {
   document.getElementById("yt-info-invitado").textContent = "Buscando...";
 
   try {
-    const res = await fetch(`http://localhost:5056/search?q=${encodeURIComponent(q)}`);
+    const res = await fetch(`https://rocola-server.onrender.com/search?q=${encodeURIComponent(q)}`);
     const data = await res.json();
+
 
     if (!data.length) {
       document.getElementById("yt-info-invitado").textContent = "No se encontraron resultados.";
@@ -422,7 +424,7 @@ async function agregarCancionInvitado(event, btn) {
 
   try {
     // 💾 Enviamos la canción al backend local (mock Firebase)
-    await fetch("http://localhost:5055/playlist", {
+    await fetch("https://rocola-server.onrender.com/playlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nueva)
@@ -442,7 +444,7 @@ async function agregarCancionInvitado(event, btn) {
 
 async function actualizarListaDesdeServidor() {
   try {
-    const res = await fetch("http://localhost:5055/playlist");
+    const res = await fetch("https://rocola-server.onrender.com/playlist");
     listaCanciones = await res.json();
     renderLista();
   } catch (err) {
@@ -604,7 +606,7 @@ async function limpiarLista() {
   if (!seguro) return;
 
   try {
-    await fetch("http://localhost:5055/playlist", { method: "DELETE" });
+    await fetch("https://rocola-server.onrender.com/playlist", { method: "DELETE" });
 
     listaCanciones = [];
     renderLista();
@@ -627,7 +629,7 @@ function mostrarConfirmacion() {
   yesBtn.onclick = async () => {
     modal.style.display = "none";
     try {
-      await fetch("http://localhost:5055/playlist", { method: "DELETE" });
+      await fetch("https://rocola-server.onrender.com/playlist", { method: "DELETE" });
       listaCanciones = [];
       renderLista();
       alert("🧹 Lista vaciada correctamente");

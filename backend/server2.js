@@ -80,7 +80,56 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
+// ... tus rutas /playlist GET, POST, DELETE, etc.
 
-server.listen(PORT, () =>
-  console.log(`🎧 Servidor Rocola + WebSocket activo en http://localhost:${PORT}`)
-);
+// === 🔍 Buscador de videos usando mirrors públicos de YouTube ===
+app.get("/search", async (req, res) => {
+  const query = req.query.q;
+  if (!query) return res.status(400).json({ error: "Falta parámetro ?q=" });
+
+  // Mirrors públicos (orden de prioridad)
+  const mirrors = [
+    `https://yt.artemislena.eu/api/v1/search?q=${encodeURIComponent(query)}`,
+    `https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query)}`,
+    `https://pipedapi.syncpundit.com/search?q=${encodeURIComponent(query)}`
+  ];
+
+  for (const url of mirrors) {
+    try {
+      console.log(`🛰️ Intentando: ${url}`);
+      const response = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
+      if (!response.ok) throw new Error(`Mirror no respondió (${response.status})`);
+      const data = await response.json();
+
+      // Filtra solo videos
+      const videos = data
+        .filter(v => v.type === "video")
+        .slice(0, 20)
+        .map(v => ({
+          title: v.title,
+          url: `https://www.youtube.com/watch?v=${v.videoId}`,
+          thumbnail: v.thumbnail || v.thumbnailUrl,
+          duration: v.lengthSeconds || v.duration,
+          author: v.author || v.uploaderName
+        }));
+
+      if (videos.length > 0) {
+        console.log(`✅ Resultados obtenidos de: ${url}`);
+        return res.json(videos);
+      }
+
+    } catch (err) {
+      console.warn(`⚠️ Error con ${url}: ${err.message}`);
+      // intenta con el siguiente mirror
+    }
+  }
+
+  // Si todos fallan
+  res.status(502).json({ error: "No se pudo obtener resultados desde ningún mirror" });
+});
+
+
+// 🧩 Server listen (mantener al final)
+server.listen(PORT, () => {
+  console.log(`🎧 Servidor Rocola + WebSocket activo en http://localhost:${PORT}`);
+});
