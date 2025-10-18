@@ -1047,8 +1047,8 @@ header.banner-rocola::after {
    ========================================================= */
 @supports (height: 100dvh) {
   .fondo-muro {
-    min-height: 100dvh;
-  }
+  min-height: var(--vh, 100vh);
+}
 }
 
 @media (max-width: 768px) {

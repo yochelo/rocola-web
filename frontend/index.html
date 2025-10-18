@@ -178,6 +178,7 @@
 window.addEventListener("load", () => {
   document.querySelector("header.banner-rocola").classList.add("loaded");
 });
+
 </script>
 
 <!-- 🧹 Modal de confirmación -->
@@ -190,6 +191,19 @@ window.addEventListener("load", () => {
     </div>
   </div>
 </div>
+
+<script>
+  // 🔧 Calcula el alto real del viewport (corrige bug de Chrome móvil)
+  function ajustarAlturaViewport() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+
+  // Ejecuta al cargar y cuando se redimensiona (por ejemplo al mostrar teclado)
+  ajustarAlturaViewport();
+  window.addEventListener('resize', ajustarAlturaViewport);
+</script>
+
 
 
 </body>
