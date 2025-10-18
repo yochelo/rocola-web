@@ -1012,12 +1012,7 @@ header.banner-rocola::after {
   padding: 20px;
   position: relative;
   overflow: hidden;
-
-    /* 🔽 clave: ocupa toda la altura visible */
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end; /* baja el contenido hacia abajo */
+  min-height: 70vh; /* ocupa al menos el 70% del alto visible */
 }
 
 /* 🔹 Overlay oscuro para legibilidad */
