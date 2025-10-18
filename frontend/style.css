@@ -1001,12 +1001,13 @@ header.banner-rocola::after {
   overflow-y: auto;
   box-shadow: inset 0 0 6px rgba(0, 255, 200, 0.15);
 }
+/* =========================================================
+   🎸 Fondo del Muro estilo Beggars Banquet (versión fija)
+   ========================================================= */
 
-/* 🎸 Fondo del Muro estilo Beggars Banquet */
-/* 🎸 Fondo solo dentro del modo MURO */
-#mod-maestro #tab-maestro-mensajes,
-#mod-invitado #tab-invitado-mensajes {
-  background-image: url("rolling.jpg");
+/* 🔹 Nuevo contenedor interno que envuelve el muro */
+.fondo-muro {
+  background-image: url("rolling.jpg");   /* 👈 imagen real */
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -1014,38 +1015,49 @@ header.banner-rocola::after {
   padding: 20px;
   position: relative;
   overflow: hidden;
+
+  /* 🔽 clave: ocupa todo el alto visible (en móviles y escritorio) */
   min-height: 100vh;
   min-height: 100dvh;
+
+  /* 🔽 para ubicar el contenido al pie (inputs y botón “Enviar”) */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
 }
 
-@supports (height: 100dvh) {
-  #mod-maestro #tab-maestro-mensajes,
-  #mod-invitado #tab-invitado-mensajes {
-    min-height: 100dvh;
-  }
-}
-
-
-/* 🔹 Overlay oscuro para legibilidad */
-#tab-maestro-mensajes::before,
-#tab-invitado-mensajes::before {
+/* 🔹 Overlay oscuro para legibilidad del texto */
+.fondo-muro::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.067); /* oscurece */
+  background: rgba(0, 0, 0, 0.07); /* oscurece apenas */
   backdrop-filter: blur(0px);
   z-index: 0;
 }
 
 /* 🔹 Contenido del muro por encima del overlay */
-#tab-maestro-mensajes > *,
-#tab-invitado-mensajes > * {
+.fondo-muro > * {
   position: relative;
   z-index: 1;
 }
+
+/* =========================================================
+   📱 Ajustes móviles para que se estire correctamente
+   ========================================================= */
+@supports (height: 100dvh) {
+  .fondo-muro {
+    min-height: 100dvh;
+  }
+}
+
+@media (max-width: 768px) {
+  .fondo-muro {
+    padding: 14px;
+    justify-content: flex-end; /* mantiene los inputs abajo */
+  }
+}
+
 
 #nombre-usuario-maestro {
   display: block;
