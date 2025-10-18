@@ -1001,13 +1001,12 @@ header.banner-rocola::after {
   overflow-y: auto;
   box-shadow: inset 0 0 6px rgba(0, 255, 200, 0.15);
 }
-/* =========================================================
-   🎸 Fondo del Muro estilo Beggars Banquet (versión fija)
-   ========================================================= */
 
-/* 🔹 Nuevo contenedor interno que envuelve el muro */
+/* =========================================================
+   🎸 Fondo del Muro estilo Beggars Banquet (versión robusta)
+   ========================================================= */
 .fondo-muro {
-  background-image: url("rolling.jpg");   /* 👈 imagen real */
+  background-image: url("rolling.jpg");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -1016,45 +1015,58 @@ header.banner-rocola::after {
   position: relative;
   overflow: hidden;
 
-  /* 🔽 clave: ocupa todo el alto visible (en móviles y escritorio) */
+  /* 🧩 ocupa todo el alto visible real */
+  height: 100%;
   min-height: 100vh;
-  min-height: 100dvh;
+  flex: 1 0 auto;
 
-  /* 🔽 para ubicar el contenido al pie (inputs y botón “Enviar”) */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
 }
 
-/* 🔹 Overlay oscuro para legibilidad del texto */
+/* 🔹 Overlay oscuro para legibilidad */
 .fondo-muro::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.07); /* oscurece apenas */
+  background: rgba(0, 0, 0, 0.07);
   backdrop-filter: blur(0px);
   z-index: 0;
 }
 
-/* 🔹 Contenido del muro por encima del overlay */
+/* 🔹 Contenido por encima del overlay */
 .fondo-muro > * {
   position: relative;
   z-index: 1;
 }
 
 /* =========================================================
-   📱 Ajustes móviles para que se estire correctamente
+   🧭 Ajuste para entorno de móvil y pantallas altas
    ========================================================= */
-@supports (height: 100dvh) {
-  .fondo-muro {
-  min-height: var(--vh, 100vh);
-}
-}
-
 @media (max-width: 768px) {
+  #tab-maestro-mensajes,
+  #tab-invitado-mensajes {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
   .fondo-muro {
-    padding: 14px;
-    justify-content: flex-end; /* mantiene los inputs abajo */
+    height: 100%;
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom, 16px); /* notch-friendly */
+  }
+
+  /* ✅ fuerza a ocupar todo el viewport disponible real */
+  html,
+  body {
+    height: 100%;
+  }
+  main.mod.active {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
   }
 }
 
