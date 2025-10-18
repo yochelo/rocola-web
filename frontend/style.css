@@ -1005,21 +1005,15 @@ header.banner-rocola::after {
 /* 🎸 Fondo del Muro estilo Beggars Banquet */
 #tab-maestro-mensajes,
 #tab-invitado-mensajes {
-  background-image: url("rolling.jpg");
+  background-image: url("rolling.jpg"); /* 👈 tu archivo real */
   background-size: cover;
   background-position: center;
   border-radius: 10px;
   padding: 20px;
   position: relative;
   overflow: hidden;
-
-  /* 🔽 clave: ocupa todo el alto visible en móviles y escritorio */
-  min-height: 100vh;
+  min-height: 100vh; /* ocupa al menos el 70% del alto visible */
   min-height: 100dvh;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
 }
 
 /* 🔹 Overlay oscuro para legibilidad */
@@ -1028,7 +1022,7 @@ header.banner-rocola::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.067);
+  background: rgba(0, 0, 0, 0.067); /* oscurece */
   backdrop-filter: blur(0px);
   z-index: 0;
 }
