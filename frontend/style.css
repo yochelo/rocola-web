@@ -997,7 +997,7 @@ header.banner-rocola::after {
   padding: 10px;
   color: #eee;
   list-style: none;
-  max-height: 250px;
+  max-height: 300px;
   overflow-y: auto;
   box-shadow: inset 0 0 6px rgba(0, 255, 200, 0.15);
 }
