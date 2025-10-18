@@ -192,19 +192,5 @@ window.addEventListener("load", () => {
   </div>
 </div>
 
-<script>
-  // 🔧 Calcula el alto real del viewport (corrige bug de Chrome móvil)
-  function ajustarAlturaViewport() {
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-  }
-
-  // Ejecuta al cargar y cuando se redimensiona (por ejemplo al mostrar teclado)
-  ajustarAlturaViewport();
-  window.addEventListener('resize', ajustarAlturaViewport);
-</script>
-
-
-
 </body>
 </html>
