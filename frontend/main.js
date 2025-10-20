@@ -671,42 +671,40 @@ function cambiarPestaña(rol, pestaña, el = null) {
   if (el) el.classList.add("active");
 
       if (pestaña === "qr") {
-    // 🛰️ Pedimos al backend local la IP del Maestro
-    fetch(`${API_BASE}/local-ip`)
-      .then(res => res.json())
-      .then(data => {
-        const ip = data.ip;
+      // 🛰️ Pedimos al backend local la IP del Maestro
+  fetch(`${API_BASE}/local-ip`)
+    .then(res => res.json())
+    .then(data => {
+      const ip = data.ip;
 
-        // 🌐 URL del backend local del Maestro
-        const urlLocal = `http://${ip}:5000`;
+      // 🌐 URL del backend local del Maestro
+      const urlLocal = `http://${ip}:5000`;
 
-        // 🧭 URL del frontend público en Render con el parámetro maestro
-        const urlFrontend = `https://rocola.onrender.com/?maestro=${encodeURIComponent(urlLocal)}`;
+      // 🧭 URL del frontend público (Render) — ¡usá tu dominio correcto!
+      const urlFrontend = `https://rocola-web.onrender.com/?maestro=${encodeURIComponent(urlLocal)}`;
 
-        // 🧩 Generamos el QR que apunta al frontend (Render) con la IP incluida
-        generarQR(rol, urlFrontend);
+      // 🧩 Genera el QR que apunta al frontend HTTPS (Render)
+      generarQR(rol, urlFrontend);
 
-        // 👇 Mostramos debajo del QR solo la IP local (por si alguien necesita copiarla)
-        const linkEl = document.getElementById(`qr-link-${rol}`);
-        if (linkEl) linkEl.textContent = urlLocal;
+      // 👇 Muestra solo la IP local para copiar y compartir
+      const linkEl = document.getElementById(`qr-link-${rol}`);
+      if (linkEl) linkEl.textContent = urlLocal;
 
-        // 💾 Guardamos ambos links
-        window.linkQRactual = urlFrontend; // el QR real
-        window.linkLocalVisible = urlLocal; // el texto visible / para compartir
-      })
-      .catch(() => {
-        // 🚨 Fallback si no se puede obtener la IP local
-        const fallback = "http://127.0.0.1:5000";
-        const fallbackFrontend = `https://rocola.onrender.com/?maestro=${encodeURIComponent(fallback)}`;
+      // Guarda ambas URLs
+      window.linkQRactual = urlFrontend;
+      window.linkLocalVisible = urlLocal;
+    })
+    .catch(() => {
+      const fallback = "http://127.0.0.1:5000";
+      const fallbackFrontend = `https://rocola-web.onrender.com/?maestro=${encodeURIComponent(fallback)}`;
 
-        generarQR(rol, fallbackFrontend);
+      generarQR(rol, fallbackFrontend);
+      const linkEl = document.getElementById(`qr-link-${rol}`);
+      if (linkEl) linkEl.textContent = fallback;
+      window.linkQRactual = fallbackFrontend;
+      window.linkLocalVisible = fallback;
+    });
 
-        const linkEl = document.getElementById(`qr-link-${rol}`);
-        if (linkEl) linkEl.textContent = fallback;
-
-        window.linkQRactual = fallbackFrontend;
-        window.linkLocalVisible = fallback;
-      });
   }
 
 
