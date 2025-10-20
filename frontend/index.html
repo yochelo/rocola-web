@@ -1,6 +1,4 @@
 
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,8 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🎶 Rocola Web (Local)</title>
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Socket.IO CDN -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+  <!-- Lógica principal -->
   <script defer src="main.js"></script>
 </head>
+
 
 <body>
 
@@ -84,8 +88,8 @@
   <div class="qr-container">
     <h3>📱 Escaneá para unirte a la Rocola</h3>
     <div id="qr-maestro"></div>
-    <p class="qr-link">https://rocolaweb.web.app</p>
-    <button class="btn-open-link" onclick="copiarLinkQR(window.location.origin)">
+    <p id="qr-link-maestro" class="qr-link">Cargando IP local...</p>
+    <button class="btn-open-link" onclick="copiarLinkQR(window.linkLocalVisible)">
       Copiar link
     </button>
   </div>
@@ -157,8 +161,8 @@
   <div class="qr-container">
     <h3>📱 Escaneá para unirte a la Rocola</h3>
     <div id="qr-invitado"></div>
-    <p class="qr-link">https://rocolaweb.web.app</p>
-    <button class="btn-open-link" onclick="copiarLinkQR(window.location.origin)">
+    <p id="qr-link-invitado" class="qr-link">Cargando IP local...</p>
+    <button class="btn-open-link" onclick="copiarLinkQR(window.linkLocalVisible)">
       Copiar link
     </button>
   </div>

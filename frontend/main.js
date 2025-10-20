@@ -1,20 +1,39 @@
-// import { db } from "./firebase-config.js";
-// import { ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
 
-// --- Simulación local ---
+// === DETECCIÓN DE IP DEL MAESTRO DESDE EL QR ===
+const params = new URLSearchParams(window.location.search);
+const ipParam = params.get("maestro");
 
-// Estado inicial local
+if (ipParam) {
+  // Si el link venía con ?maestro=http://192.168.x.x:5000
+  window.ipMaestro = ipParam;
+  console.log("🎯 IP del Maestro detectada:", window.ipMaestro);
+}
 
-// === SOCKET.IO ===
-// const socket = io("https://rocola-server.onrender.com");
-// 🔇 Hosting Firebase: no hay backend local, se desactiva temporalmente el chat
-const socket = io("https://rocola-web.onrender.com");
+// === CONFIGURACIÓN DE CONEXIÓN ===
+// En modo Maestro, el backend corre local en su PC (localhost:5000)
+// En modo Invitado, se setea window.ipMaestro al escanear el QR
+
+let API_BASE;
+
+if (window.ipMaestro) {
+  // Invitado: IP del Maestro obtenida desde QR
+  API_BASE = window.ipMaestro;
+} else {
+  // Maestro (modo local)
+  API_BASE = "http://localhost:5000";
+}
+
+// === Socket.IO ===
+const socket = io(API_BASE);
+
+
 
 // 🔔 Cuando el backend emite "playlist_actualizada"
 socket.on("playlist_actualizada", (nuevaLista) => {
   listaCanciones = nuevaLista;
   renderLista();
 });
+
 
 let listaCanciones = [];
 
@@ -49,6 +68,7 @@ function cambiarPestaña(rol, pestaña) {
 }
 
 // Renderizar lista
+// Renderizar lista
 function renderLista() {
   const maestro = document.getElementById("lista-maestro");
   const invitado = document.getElementById("lista-invitado");
@@ -78,46 +98,35 @@ function renderLista() {
     liM.style.userSelect = "none";
     liM.style.cursor = "pointer";
 
-    // 👇 Click: abre la app de YouTube (Android/iOS) o navegador
+    // 👇 Click: maestro marca canción y notifica a todos
     liM.onclick = () => {
-  // 1️⃣ Actualiza estados internos
-  listaCanciones.forEach((c, j) => {
-    c.reproducida = j < i;
-    c.enReproduccion = j === i;
-  });
+      // 1️⃣ Actualiza estados internos
+      listaCanciones.forEach((c, j) => {
+        c.reproducida = j < i;
+        c.enReproduccion = j === i;
+      });
 
-  // 2️⃣ Vuelve a renderizar la lista (colores, emoji, tamaño)
-  renderLista();
+      // 2️⃣ Enviar actualización al backend
+      socket.emit("cancion_en_reproduccion", {
+        lista: listaCanciones
+      });
 
-  // 3️⃣ Abre YouTube
-  const link = c.link || "";
-  if (!link) return;
+      // 3️⃣ Refrescar vista local
+      renderLista();
 
-  const videoId = link.split("v=")[1];
-  const youtubeAppUrl = navigator.userAgent.includes("iPhone")
-    ? `youtube://${videoId}`
-    : `vnd.youtube://${videoId}`;
-
-  // Intenta abrir app, si no abre, fallback web
-  window.location.href = youtubeAppUrl;
-  setTimeout(() => {
-    window.open(link, "_blank");
-  }, 800);
-};
-
-
-    // --- Copia visual para Invitado ---
-    const liI = liM.cloneNode(true);
-    liI.onclick = null; // 🔒 sin acción para invitado
+      // 4️⃣ Abrir la canción en YouTube (si el maestro está en PC o móvil)
+      if (c.id) {
+        window.open(`https://www.youtube.com/watch?v=${c.id}`, "_blank");
+      }
+    };
 
     maestro.appendChild(liM);
+
+    // --- Elemento para Invitado ---
+    const liI = liM.cloneNode(true);
+    liI.style.cursor = "default"; // los invitados no pueden controlar
     invitado.appendChild(liI);
   });
-
-  if (listaCanciones.length === 0) {
-    maestro.innerHTML = "<li>- Lista vacía -</li>";
-    invitado.innerHTML = "<li>- Lista vacía -</li>";
-  }
 }
 
 // === ▶️ Reproducir la canción i-ésima ===
@@ -167,7 +176,7 @@ function forzarRefresh() {
     document.getElementById("yt-info").textContent = "Buscando...";
 
     try {
-      const res = await fetch(`https://rocola-web.onrender.com/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
 
 
@@ -179,7 +188,7 @@ function forzarRefresh() {
       // 🟢 Convertimos el formato para renderResultados()
       const videos = data.map(v => ({
         id: v.id,                      // viene del proxy
-        titulo: v.title || "Sin título"
+        titulo: v.titulo || v.title || "Sin título"
       }));
 
       // 🎬 Mostramos en pantalla
@@ -295,7 +304,7 @@ function previewCancion(event, btn) {
   event.stopPropagation();
   const id = btn.closest(".resultado").dataset.id;
   const iframe = document.getElementById("previewPlayer");
-  iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+  iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`;
 }
 
 // === ➕ Agregar desde los resultados de búsqueda (overlay) ===
@@ -313,7 +322,7 @@ async function agregarDesdeResultados(event, btn) {
 
   try {
     // 💾 Enviamos la canción al backend local (mock Firebase)
-    await fetch("https://rocola-web.onrender.com/playlist", {
+    await fetch(`${API_BASE}/agregar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nueva)
@@ -357,7 +366,7 @@ async function buscarVideosLocalInvitado() {
   document.getElementById("yt-info-invitado").textContent = "Buscando...";
 
   try {
-    const res = await fetch(`https://rocola-server.onrender.com/search?q=${encodeURIComponent(q)}`);
+    const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`);
     const data = await res.json();
 
 
@@ -368,7 +377,8 @@ async function buscarVideosLocalInvitado() {
 
     const videos = data.map(v => ({
       id: v.id,
-      titulo: v.title || "Sin título"
+      titulo: v.titulo || v.title || "Sin título"
+
     }));
 
     renderResultadosInvitado(videos);
@@ -406,7 +416,7 @@ function previewCancionInvitado(event, btn) {
   event.stopPropagation();
   const id = btn.closest(".resultado").dataset.id;
   const iframe = document.getElementById("previewPlayerInvitado");
-  iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+  iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`;
 }
 
 // 🎧 Agregar desde resultados (Invitado)
@@ -423,7 +433,7 @@ async function agregarCancionInvitado(event, btn) {
 
   try {
     // 💾 Enviamos la canción al backend local (mock Firebase)
-    await fetch("https://rocola-web.onrender.com/playlist", {
+    await fetch(`${API_BASE}/agregar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nueva)
@@ -443,7 +453,7 @@ async function agregarCancionInvitado(event, btn) {
 
 async function actualizarListaDesdeServidor() {
   try {
-    const res = await fetch("https://rocola-web.onrender.com/playlist");
+    const res = await fetch(`${API_BASE}/playlist`);
     listaCanciones = await res.json();
     renderLista();
   } catch (err) {
@@ -605,7 +615,7 @@ async function limpiarLista() {
   if (!seguro) return;
 
   try {
-    await fetch("https://rocola-web.onrender.com/playlist", { method: "DELETE" });
+    await fetch(`${API_BASE}/playlist`, { method: "DELETE" });
 
     listaCanciones = [];
     renderLista();
@@ -628,7 +638,7 @@ function mostrarConfirmacion() {
   yesBtn.onclick = async () => {
     modal.style.display = "none";
     try {
-      await fetch("https://rocola-web.onrender.com/playlist", { method: "DELETE" });
+      await fetch(`${API_BASE}/playlist`, { method: "DELETE" });
       listaCanciones = [];
       renderLista();
       alert("🧹 Lista vaciada correctamente");
@@ -660,8 +670,43 @@ function cambiarPestaña(rol, pestaña, el = null) {
   document.getElementById(`tab-${rol}-${pestaña}`)?.classList.add("active");
   if (el) el.classList.add("active");
 
-  if (pestaña === "qr") {
-    generarQR(rol, "https://rocolaweb.web.app");
+      if (pestaña === "qr") {
+    // 🛰️ Pedimos al backend local la IP del Maestro
+    fetch(`${API_BASE}/local-ip`)
+      .then(res => res.json())
+      .then(data => {
+        const ip = data.ip;
+
+        // 🌐 URL del backend local del Maestro
+        const urlLocal = `http://${ip}:5000`;
+
+        // 🧭 URL del frontend público en Render con el parámetro maestro
+        const urlFrontend = `https://rocola.onrender.com/?maestro=${encodeURIComponent(urlLocal)}`;
+
+        // 🧩 Generamos el QR que apunta al frontend (Render) con la IP incluida
+        generarQR(rol, urlFrontend);
+
+        // 👇 Mostramos debajo del QR solo la IP local (por si alguien necesita copiarla)
+        const linkEl = document.getElementById(`qr-link-${rol}`);
+        if (linkEl) linkEl.textContent = urlLocal;
+
+        // 💾 Guardamos ambos links
+        window.linkQRactual = urlFrontend; // el QR real
+        window.linkLocalVisible = urlLocal; // el texto visible / para compartir
+      })
+      .catch(() => {
+        // 🚨 Fallback si no se puede obtener la IP local
+        const fallback = "http://127.0.0.1:5000";
+        const fallbackFrontend = `https://rocola.onrender.com/?maestro=${encodeURIComponent(fallback)}`;
+
+        generarQR(rol, fallbackFrontend);
+
+        const linkEl = document.getElementById(`qr-link-${rol}`);
+        if (linkEl) linkEl.textContent = fallback;
+
+        window.linkQRactual = fallbackFrontend;
+        window.linkLocalVisible = fallback;
+      });
   }
 
 
@@ -678,6 +723,7 @@ function generarQR(rol, url) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=${size}x${size}`;
   contenedor.innerHTML = `<img src="${qrUrl}" alt="QR ${rol}" width="${size}" height="${size}" />`;
 }
+
 
 // 📋 Copiar link al portapapeles con un toast
 function copiarLinkQR(url) {

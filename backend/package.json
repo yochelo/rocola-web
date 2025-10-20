@@ -1,16 +1,22 @@
 {
   "name": "rocola-web",
   "version": "1.0.0",
-  "type": "commonjs",
-  "description": "Rocola Web (frontend + backend)",
+  "description": "Rocola Web - servidor unificado (frontend + backend + sockets + búsqueda)",
   "main": "server2.js",
+  "type": "commonjs",
   "scripts": {
-    "start": "node server2.js"
+    "start": "node server2.js",
+    "dev": "nodemon server2.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "socket.io": "^4.7.5"
+    "node-fetch": "^3.3.2",
+    "socket.io": "^4.7.5",
+    "youtube-sr": "^4.3.12"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   },
   "engines": {
     "node": ">=18.0.0"

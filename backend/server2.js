@@ -1,69 +1,103 @@
-
-
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const express = require("express");
+// ---------- Dependencias (CommonJS)
+const path = require("path");
 const fs = require("fs");
+const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 
+// node-fetch v3 es ESM: wrapper dinámico para CommonJS
+const fetch = (...args) => import("node-fetch").then(({ default: f }) => f(...args));
+
+// ---------- App & Server
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*" }
-});
+const io = new Server(server, { cors: { origin: "*" } });
 
-const PORT = process.env.PORT || 5055;
-const PLAYLIST_FILE = "./playlist.json";
+const PORT = 5000;
 
+// ---------- Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Crea el archivo si no existe
-if (!fs.existsSync(PLAYLIST_FILE)) fs.writeFileSync(PLAYLIST_FILE, "[]");
+// ---------- Servir frontend
+const FRONTEND_PATH = path.join(__dirname, "../frontend");
+app.use(express.static(FRONTEND_PATH));
+app.get("/", (_req, res) => res.sendFile(path.join(FRONTEND_PATH, "index.html")));
 
-// === GET /playlist ===
-app.get("/playlist", (req, res) => {
-  console.log("📡 GET /playlist ejecutado");
-  const data = fs.readFileSync(PLAYLIST_FILE, "utf8");
-  res.json(JSON.parse(data));
-});
+// ---------- Playlist (archivo local)
+const PLAYLIST_PATH = path.join(__dirname, "playlist.json");
+function readPlaylist() {
+  try { return JSON.parse(fs.readFileSync(PLAYLIST_PATH, "utf-8") || "[]"); }
+  catch { return []; }
+}
+function writePlaylist(data) { fs.writeFileSync(PLAYLIST_PATH, JSON.stringify(data, null, 2), "utf-8"); }
 
-// === POST /playlist ===
-app.post("/playlist", (req, res) => {
-  console.log("📩 POST /playlist ejecutado");
-  const nueva = req.body;
-  const lista = JSON.parse(fs.readFileSync(PLAYLIST_FILE, "utf8"));
-  const existe = lista.some(c => c.link === nueva.link);
-  if (!existe) {
-    lista.push(nueva);
-    fs.writeFileSync(PLAYLIST_FILE, JSON.stringify(lista, null, 2));
+app.get("/playlist", (_req, res) => res.json(readPlaylist()));
 
-    // 🚀 Notificar a todos los conectados
-    io.emit("playlist_actualizada", lista);
+app.post("/agregar", (req, res) => {
+  console.log("📩 POST /agregar ejecutado. Body:", req.body);
+
+  // Acepta tanto id como link, para compatibilidad con el front
+  const { id, titulo, duracion, link } = req.body || {};
+
+  // Si no viene el id, lo derivamos del link (después del v=)
+  const videoId = id || (link ? link.split("v=")[1] : null);
+  if (!videoId || !titulo) {
+    console.log("⚠️ Faltan campos en body:", req.body);
+    return res.status(400).json({ error: "Faltan campos" });
   }
 
+  const list = readPlaylist();
+
+  // Evitar duplicados
+  if (list.some(v => v.id === videoId)) {
+    console.log("⚠️ Video ya existe en la lista:", videoId);
+    return res.json({ ok: false, msg: "Ya estaba en la lista" });
+  }
+
+  const nueva = {
+    id: videoId,
+    titulo,
+    duracion: duracion || null,
+    link: link || `https://www.youtube.com/watch?v=${videoId}`,
+    reproducida: false,
+    enReproduccion: false,
+    ts: Date.now()
+  };
+
+  list.push(nueva);
+  writePlaylist(list);
+  io.emit("playlist_actualizada", list);
+
+  console.log("✅ Canción agregada:", nueva.titulo);
+  res.json({ ok: true, total: list.length });
+});
+
+
+app.post("/limpiar", (_req, res) => {
+  writePlaylist([]);
+  io.emit("playlist_actualizada", []);
   res.json({ ok: true });
 });
 
-// === DELETE /playlist ===
-app.delete("/playlist", (req, res) => {
-  console.log("🗑 DELETE /playlist ejecutado");
-  fs.writeFileSync(PLAYLIST_FILE, "[]");
-  io.emit("playlist_actualizada", []); // 🔔 Notifica lista vacía
-  res.json({ ok: true });
-});
-
-// === WebSocket ===
-io.on("connection", socket => {
+// ---------- Socket.IO
+io.on("connection", (socket) => {
   console.log("🟢 Cliente conectado");
 
-  const lista = JSON.parse(fs.readFileSync(PLAYLIST_FILE, "utf8"));
-  socket.emit("playlist_actualizada", lista);
+  // 📀 Envía la lista actual al conectarse
+  socket.emit("playlist_actualizada", readPlaylist());
 
+  // 💬 Chat del muro (Maestro e Invitado)
   socket.on("nuevo_mensaje", (msg) => {
     console.log("💬 Mensaje recibido:", msg);
-    io.emit("mensaje_recibido", msg); // reenvía a todos (incluido el que lo envió)
+    io.emit("mensaje_recibido", msg); // reenviarlo a todos
+  });
+
+  // 🎵 Sincronización de reproducción (Maestro → Invitados)
+  socket.on("cancion_en_reproduccion", (data) => {
+    console.log("🎧 Reproducción actualizada");
+    io.emit("playlist_actualizada", data.lista);
   });
 
   socket.on("disconnect", () => {
@@ -72,73 +106,47 @@ io.on("connection", socket => {
 });
 
 
-// === Servir el frontend ===
-const path = require("path");
+// ---------- Búsqueda con youtube-sr
+const ytsr = require("youtube-sr").default;
 
-const FRONTEND_PATH = path.join(__dirname, "../frontend");
-app.use(express.static(FRONTEND_PATH));
+app.get("/search", async (req, res) => {
+  try {
+    const q = (req.query.q || "").trim();
+    if (!q) return res.status(400).json({ error: "Falta parámetro q" });
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(FRONTEND_PATH, "index.html"));
+    const results = await ytsr.search(q, { limit: 10, safeSearch: false });
+    const videos = results.map(v => ({
+      id: v.id,
+      titulo: v.title,
+      duracion: v.durationFormatted,
+      thumbnail: v.thumbnail?.url,
+      url: v.url
+    }));
+
+    res.json(videos);
+  } catch (err) {
+    console.error("❌ Error en búsqueda:", err);
+    res.status(500).json({ error: "Error interno en búsqueda" });
+  }
 });
 
+const os = require("os");
 
-// ... tus rutas /playlist GET, POST, DELETE, etc.
-
-// === 🔍 Buscador de videos usando mirrors públicos de YouTube ===
-app.get("/search", async (req, res) => {
-  const query = req.query.q;
-  if (!query) return res.status(400).json({ error: "Falta parámetro ?q=" });
-
-  // Mirrors públicos (orden de prioridad)
-  const mirrors = [
-  "https://yt.artemislena.eu/api/v1/search?q=",
-  "https://pipedapi.kavin.rocks/search?q=",
-  "https://pipedapi.mha.fi/search?q=",
-  "https://pipedapi.adminforge.de/search?q=",
-  "https://yewtu.be/api/v1/search?q=",
-  "https://invidious.privacydev.net/api/v1/search?q="
-  ];
-
-
-  for (const url of mirrors) {
-    try {
-      console.log(`🛰️ Intentando: ${url}`);
-      const response = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
-      if (!response.ok) throw new Error(`Mirror no respondió (${response.status})`);
-      const data = await response.json();
-
-      // Filtra solo videos
-      const videos = data
-        .filter(v => v.type === "video")
-        .slice(0, 20)
-        .map(v => ({
-          title: v.title,
-          url: `https://www.youtube.com/watch?v=${v.videoId}`,
-          thumbnail: v.thumbnail || v.thumbnailUrl,
-          duration: v.lengthSeconds || v.duration,
-          author: v.author || v.uploaderName
-        }));
-
-      if (videos.length > 0) {
-        console.log(`✅ Resultados obtenidos de: ${url}`);
-        console.log("✅ Mirror que respondió:", url);
-
-        return res.json(videos);
+app.get("/local-ip", (req, res) => {
+  const nets = os.networkInterfaces();
+  let localIP = "localhost";
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === "IPv4" && !net.internal) {
+        localIP = net.address;
       }
-
-    } catch (err) {
-      console.warn(`⚠️ Error con ${url}: ${err.message}`);
-      // intenta con el siguiente mirror
     }
   }
-
-  // Si todos fallan
-  res.status(502).json({ error: "No se pudo obtener resultados desde ningún mirror" });
+  res.json({ ip: localIP });
 });
 
 
-// 🧩 Server listen (mantener al final)
+// ---------- Arranque
 server.listen(PORT, () => {
   console.log(`🎧 Servidor Rocola + WebSocket activo en http://localhost:${PORT}`);
 });
