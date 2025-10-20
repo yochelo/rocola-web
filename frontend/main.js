@@ -751,3 +751,10 @@ function mostrarToast(mensaje) {
   }, 2200);
 }
 
+// 🚨 Captura y muestra errores directamente en pantalla (modo debug móvil)
+window.addEventListener("error", (event) => {
+  alert("⚠️ Error: " + event.message);
+});
+window.addEventListener("unhandledrejection", (event) => {
+  alert("⚠️ Promesa rechazada: " + event.reason);
+});
