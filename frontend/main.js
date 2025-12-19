@@ -1,32 +1,16 @@
+// import { db } from "./firebase-config.js";
+// import { ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
 
-// === DETECCIÓN DE IP DEL MAESTRO DESDE EL QR ===
-const params = new URLSearchParams(window.location.search);
-const ipParam = params.get("maestro");
+// --- Simulación local ---
 
-if (ipParam) {
-  // Si el link venía con ?maestro=http://192.168.x.x:5000
-  window.ipMaestro = ipParam;
-  console.log("🎯 IP del Maestro detectada:", window.ipMaestro);
-}
+// Estado inicial local
 
-// === CONFIGURACIÓN DE CONEXIÓN ===
-// En modo Maestro, el backend corre local en su PC (localhost:5000)
-// En modo Invitado, se setea window.ipMaestro al escanear el QR
+// === SOCKET.IO ===
+// const socket = io("https://rocola-server.onrender.com");
+// 🔇 Hosting Firebase: no hay backend local, se desactiva temporalmente el chat
+const API_BASE = window.location.origin;
 
-let API_BASE;
-
-if (window.ipMaestro) {
-  // Invitado: IP del Maestro obtenida desde QR
-  API_BASE = window.ipMaestro;
-} else {
-  // Maestro (modo local)
-  API_BASE = "http://localhost:5000";
-}
-
-// === Socket.IO ===
-const socket = io(API_BASE);
-
-
+const socket = io(window.location.origin);
 
 // 🔔 Cuando el backend emite "playlist_actualizada"
 socket.on("playlist_actualizada", (nuevaLista) => {
@@ -36,6 +20,9 @@ socket.on("playlist_actualizada", (nuevaLista) => {
 
 
 let listaCanciones = [];
+let autoplayActivo = true;   // 🔁 autoplay encendido por defecto
+let timerActual = null;      // ⏱️ referencia del temporizador
+
 
 // Mostrar módulos
 function mostrarModulo(nombre) {
@@ -98,26 +85,10 @@ function renderLista() {
     liM.style.userSelect = "none";
     liM.style.cursor = "pointer";
 
-    // 👇 Click: maestro marca canción y notifica a todos
+    // 🎵 Click del Maestro → reproduce manual y activa autoplay
     liM.onclick = () => {
-      // 1️⃣ Actualiza estados internos
-      listaCanciones.forEach((c, j) => {
-        c.reproducida = j < i;
-        c.enReproduccion = j === i;
-      });
-
-      // 2️⃣ Enviar actualización al backend
-      socket.emit("cancion_en_reproduccion", {
-        lista: listaCanciones
-      });
-
-      // 3️⃣ Refrescar vista local
-      renderLista();
-
-      // 4️⃣ Abrir la canción en YouTube (si el maestro está en PC o móvil)
-      if (c.id) {
-        window.open(`https://www.youtube.com/watch?v=${c.id}`, "_blank");
-      }
+      clearTimeout(timerActual);   // 🧹 cancela cualquier autoplay anterior
+      reproducirCancion(i);        // ▶️ llama a la nueva función global
     };
 
     maestro.appendChild(liM);
@@ -129,12 +100,16 @@ function renderLista() {
   });
 }
 
-// === ▶️ Reproducir la canción i-ésima ===
+// === ▶️ Autoplay Maestro ===
+
 function reproducirCancion(index) {
   const seleccionada = listaCanciones[index];
   if (!seleccionada || !seleccionada.link) return;
 
-  // 🔄 estados tipo Kotlin: todo antes = reproducido, actual = enReproduccion
+  // 🧹 cancelamos cualquier timer previo
+  clearTimeout(timerActual);
+
+  // 🔄 marcamos estados (todo antes = reproducido, actual = enReproduccion)
   listaCanciones.forEach((c, i) => {
     c.reproducida = i < index;
     c.enReproduccion = i === index;
@@ -142,9 +117,40 @@ function reproducirCancion(index) {
 
   renderLista();
 
-  // 🎬 Abre YouTube (en Android suele ofrecer abrir la app oficial)
-  window.open(seleccionada.link, "_blank");
+  // 🎬 abrir YouTube (usá _blank o window.open según tu flujo)
+const videoId = seleccionada.id || new URL(seleccionada.link).searchParams.get("v");
+
+const ytUrl = `https://www.youtube.com/watch?v=${videoId}&autoplay=1&mute=1`;
+
+window.open(ytUrl, "_blank");
+
+
+  // ⏱️ convertir duración "m:ss" o "h:mm:ss" a segundos
+  const duracion = seleccionada.duracion || "0:00";
+  const partes = duracion.split(":").map(Number).reverse(); // ej. [ss, mm, hh]
+  const duracionSeg =
+    (partes[0] || 0) +
+    (partes[1] || 0) * 60 +
+    (partes[2] || 0) * 3600;
+
+  // 🚀 programar la siguiente canción
+  console.log("⏱️ Duración texto:", duracion);
+  console.log("⏱️ Duración en segundos:", duracionSeg);
+  console.log("📀 Canción actual:", seleccionada.titulo);
+  console.log("➡️ Próxima index:", index + 1, "/", listaCanciones.length);
+
+  if (index + 1 < listaCanciones.length && duracionSeg > 0) {
+    console.log("✅ Programando siguiente:", listaCanciones[index + 1].titulo, "en", duracionSeg, "segundos");
+
+    
+    timerActual = setTimeout(() => {
+      reproducirCancion(index + 1);
+    }, duracionSeg * 1000);
+  } else {
+    console.log("🎵 Playlist finalizada o sin duración válida.");
+  }
 }
+
 
 
 
@@ -176,7 +182,7 @@ function forzarRefresh() {
     document.getElementById("yt-info").textContent = "Buscando...";
 
     try {
-      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`${window.location.origin}/search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
 
 
@@ -187,9 +193,11 @@ function forzarRefresh() {
 
       // 🟢 Convertimos el formato para renderResultados()
       const videos = data.map(v => ({
-        id: v.id,                      // viene del proxy
-        titulo: v.titulo || v.title || "Sin título"
+        id: v.id,
+        titulo: v.titulo || v.title || "Sin título",
+        duracion: v.duracion || v.durationFormatted || "0:00"
       }));
+
 
       // 🎬 Mostramos en pantalla
       renderResultados(videos);
@@ -273,14 +281,17 @@ function renderResultados(videos) {
     const div = document.createElement("div");
     div.className = "resultado";
     div.dataset.id = video.id;
+    div.dataset.duracion = video.duracion; // 👈 agregado
     div.innerHTML = `
       <img src="https://img.youtube.com/vi/${video.id}/0.jpg" alt="">
       <p>${video.titulo}</p>
+      <span class="duracion-preview">${video.duracion || ""}</span>
       <div class="opciones">
         <button class="btn agregar" onclick="agregarDesdeResultados(event, this)">Agregar</button>
         <button class="btn preview" onclick="previewCancion(event, this)">Preview</button>
       </div>
     `;
+
     div.onclick = () => mostrarOpciones(div);
     contenedor.appendChild(div);
   });
@@ -315,10 +326,13 @@ async function agregarDesdeResultados(event, btn) {
 
   const card = btn.closest(".resultado");
   const videoId = card.dataset.id;
+  
   const titulo = card.querySelector("p").textContent;
   const link = `https://www.youtube.com/watch?v=${videoId}`;
 
-  const nueva = { titulo, link, reproducida: false, enReproduccion: false };
+  const duracion = card.dataset.duracion || card.getAttribute("data-duracion");
+  const nueva = { titulo, link, duracion, reproducida: false, enReproduccion: false };
+
 
   try {
     // 💾 Enviamos la canción al backend local (mock Firebase)
@@ -366,7 +380,7 @@ async function buscarVideosLocalInvitado() {
   document.getElementById("yt-info-invitado").textContent = "Buscando...";
 
   try {
-    const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`);
+    const res = await fetch(`${window.location.origin}/search?q=${encodeURIComponent(q)}`);
     const data = await res.json();
 
 
@@ -377,9 +391,10 @@ async function buscarVideosLocalInvitado() {
 
     const videos = data.map(v => ({
       id: v.id,
-      titulo: v.titulo || v.title || "Sin título"
-
+      titulo: v.titulo || v.title || "Sin título",
+      duracion: v.duracion || v.durationFormatted || "0:00"
     }));
+
 
     renderResultadosInvitado(videos);
     document.getElementById("yt-info-invitado").textContent = `✅ ${videos.length} resultados para '${q}'`;
@@ -429,7 +444,9 @@ async function agregarCancionInvitado(event, btn) {
   const titulo = card.querySelector("p").textContent;
   const link = `https://www.youtube.com/watch?v=${videoId}`;
 
-  const nueva = { titulo, link, reproducida: false, enReproduccion: false };
+  const duracion = card.dataset.duracion || card.getAttribute("data-duracion");
+  const nueva = { titulo, link, duracion, reproducida: false, enReproduccion: false };
+
 
   try {
     // 💾 Enviamos la canción al backend local (mock Firebase)
@@ -670,41 +687,28 @@ function cambiarPestaña(rol, pestaña, el = null) {
   document.getElementById(`tab-${rol}-${pestaña}`)?.classList.add("active");
   if (el) el.classList.add("active");
 
-      if (pestaña === "qr") {
-      // 🛰️ Pedimos al backend local la IP del Maestro
-  fetch(`${API_BASE}/local-ip`)
-    .then(res => res.json())
-    .then(data => {
-      const ip = data.ip;
+  if (pestaña === "qr") {
+    fetch(`${API_BASE}/local-ip`)
+      .then(res => res.json())
+      .then(data => {
+        const ip = data.ip;
+        const urlLocal = `http://${ip}:3443`;
+        generarQR(rol, urlLocal);
 
-      // 🌐 URL del backend local del Maestro
-      const urlLocal = `http://${ip}:5000`;
+        // 👇 Actualiza el texto debajo del QR
+        const linkEl = document.getElementById(`qr-link-${rol}`);
+        if (linkEl) linkEl.textContent = urlLocal;
 
-      // 🧭 URL del frontend público (Render) — ¡usá tu dominio correcto!
-      const urlFrontend = `https://rocola-web.onrender.com/?maestro=${encodeURIComponent(urlLocal)}`;
-
-      // 🧩 Genera el QR que apunta al frontend HTTPS (Render)
-      generarQR(rol, urlFrontend);
-
-      // 👇 Muestra solo la IP local para copiar y compartir
-      const linkEl = document.getElementById(`qr-link-${rol}`);
-      if (linkEl) linkEl.textContent = urlLocal;
-
-      // Guarda ambas URLs
-      window.linkQRactual = urlFrontend;
-      window.linkLocalVisible = urlLocal;
-    })
-    .catch(() => {
-      const fallback = "http://127.0.0.1:5000";
-      const fallbackFrontend = `https://rocola-web.onrender.com/?maestro=${encodeURIComponent(fallback)}`;
-
-      generarQR(rol, fallbackFrontend);
-      const linkEl = document.getElementById(`qr-link-${rol}`);
-      if (linkEl) linkEl.textContent = fallback;
-      window.linkQRactual = fallbackFrontend;
-      window.linkLocalVisible = fallback;
-    });
-
+        // Guarda el link en window para copiarlo después
+        window.linkQRactual = urlLocal;
+      })
+      .catch(() => {
+        const fallback = "http://127.0.0.1:3443";
+        generarQR(rol, fallback);
+        const linkEl = document.getElementById(`qr-link-${rol}`);
+        if (linkEl) linkEl.textContent = fallback;
+        window.linkQRactual = fallback;
+      });
   }
 
 
@@ -751,10 +755,3 @@ function mostrarToast(mensaje) {
   }, 2200);
 }
 
-// 🚨 Captura y muestra errores directamente en pantalla (modo debug móvil)
-window.addEventListener("error", (event) => {
-  alert("⚠️ Error: " + event.message);
-});
-window.addEventListener("unhandledrejection", (event) => {
-  alert("⚠️ Promesa rechazada: " + event.reason);
-});

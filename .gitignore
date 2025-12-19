@@ -1,6 +1,5 @@
 # === Carpetas de dependencias y build ===
 node_modules/
-backend/node_modules/
 firebase-debug.log
 firebase-debug.*
 *.log
@@ -15,22 +14,13 @@ firebase-debug.*
 .env
 .DS_Store
 Thumbs.db
-RUN.bat
 
-# === Ignorar archivos y datos temporales del backend ===
-backend/playlist.json
-backend/Procfile
-playlist.json
-proxy_search.py
-
-# === Ignorar entornos y configuraciones duplicadas ===
+# === Ignorar archivos de backend innecesarios en el front ===
+backend/node_modules/
 backend/.env
 backend/.firebase/
 backend/.firebaserc
 
-# === Archivos Python o cachés innecesarios ===
+# === Otros ===
 *.pyc
 __pycache__/
-
-# === Archivos del sistema o temporales ===
-desktop.ini

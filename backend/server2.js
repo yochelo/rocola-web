@@ -1,9 +1,8 @@
-// ---------- Dependencias (CommonJS)
+const https = require("https");
 const path = require("path");
 const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
-const http = require("http");
 const { Server } = require("socket.io");
 
 // node-fetch v3 es ESM: wrapper dinámico para CommonJS
@@ -11,10 +10,14 @@ const fetch = (...args) => import("node-fetch").then(({ default: f }) => f(...ar
 
 // ---------- App & Server
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const server = https.createServer({
+  key: fs.readFileSync(path.join(__dirname, "certs", "key.pem")),
+  cert: fs.readFileSync(path.join(__dirname, "certs", "cert.pem"))
+}, app);
 
-const PORT = 5000;
+const io = new Server(server, { cors: { origin: "*" } });
+const PORT = 3443;
+
 
 // ---------- Middlewares
 app.use(cors());
@@ -148,5 +151,5 @@ app.get("/local-ip", (req, res) => {
 
 // ---------- Arranque
 server.listen(PORT, () => {
-  console.log(`🎧 Servidor Rocola + WebSocket activo en http://localhost:${PORT}`);
+  console.log(`🎧 Servidor Rocola + WebSocket activo en http://192.168.0.134:${PORT}`);
 });
